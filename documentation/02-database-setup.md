@@ -718,7 +718,7 @@ The database currently contains only Flyway's schema-history table.
 The next database step will be creating the first versioned migration for the
 portfolio domain model.
 
-> Architectural principle: Infrastructure should be reproducible and explicit.
+> **Architectural principle:** Infrastructure should be reproducible and explicit.
 External dependencies such as databases should be configured as part of the
 project environment, while secrets remain outside source control. Schema changes
 should be version-controlled rather than applied manually.
