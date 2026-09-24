@@ -1,0 +1,20 @@
+# Environment variables / secrets
+.env
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Java / Maven
+target/
+*.log
+
+# Frontend - later
+node_modules/
+dist/
+
+# Local editor files
+.vscode/
