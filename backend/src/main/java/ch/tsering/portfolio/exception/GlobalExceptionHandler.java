@@ -48,4 +48,16 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(response);
     }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleProjectNotFound(
+            ProjectNotFoundException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                        "error", "project_not_found",
+                        "message", exception.getMessage()
+                ));
+    }
 }

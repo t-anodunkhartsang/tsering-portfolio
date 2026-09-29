@@ -3,8 +3,10 @@ package ch.tsering.portfolio.service;
 import ch.tsering.portfolio.dto.CreateProjectRequest;
 import ch.tsering.portfolio.dto.ProjectDetailResponse;
 import ch.tsering.portfolio.dto.ProjectSummaryResponse;
+import ch.tsering.portfolio.dto.UpdateProjectRequest;
 import ch.tsering.portfolio.entity.Project;
 import ch.tsering.portfolio.exception.DuplicateProjectSlugException;
+import ch.tsering.portfolio.exception.ProjectNotFoundException;
 import ch.tsering.portfolio.repository.ProjectRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,9 +37,9 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ProjectDetailResponse> getProjectBySlug(String slug) {
-        return projectRepository.findBySlug(slug)
-                .map(this::toDetailResponse);
+    public ProjectDetailResponse getProjectBySlug(String slug) {
+        Project project = getProjectEntityBySlug(slug);
+        return toDetailResponse(project);
     }
 
     @Transactional
@@ -64,6 +66,41 @@ public class ProjectService {
         return toDetailResponse(savedProject);
     }
 
+    @Transactional
+    public ProjectDetailResponse updateProject(
+            String currentSlug,
+            UpdateProjectRequest request
+    ) {
+        Project project = getProjectEntityBySlug(currentSlug);
+
+        if (projectRepository.existsBySlugAndIdNot(
+                request.slug(),
+                project.getId()
+        )) {
+            throw new DuplicateProjectSlugException(request.slug());
+        }
+
+        project.setSlug(request.slug());
+        project.setTitle(request.title());
+        project.setShortDescription(request.shortDescription());
+        project.setDescription(request.description());
+        project.setGithubUrl(request.githubUrl());
+        project.setLiveUrl(request.liveUrl());
+        project.setImageUrl(request.imageUrl());
+        project.setFeatured(request.featured());
+        project.setDisplayOrder(request.displayOrder());
+
+        Project updatedProject = projectRepository.save(project);
+
+        return toDetailResponse(updatedProject);
+    }
+
+    @Transactional
+    public void deleteProject(String slug) {
+        Project project = getProjectEntityBySlug(slug);
+        projectRepository.delete(project);
+    }
+
     private ProjectSummaryResponse toSummaryResponse(Project project) {
         return new ProjectSummaryResponse(
                 project.getSlug(),
@@ -87,5 +124,10 @@ public class ProjectService {
                 project.getImageUrl(),
                 project.isFeatured()
         );
+    }
+
+    private Project getProjectEntityBySlug(String slug) {
+        return projectRepository.findBySlug(slug)
+                .orElseThrow(() -> new ProjectNotFoundException(slug));
     }
 }

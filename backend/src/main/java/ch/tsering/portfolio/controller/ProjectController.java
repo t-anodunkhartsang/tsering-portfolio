@@ -3,6 +3,7 @@ package ch.tsering.portfolio.controller;
 import ch.tsering.portfolio.dto.CreateProjectRequest;
 import ch.tsering.portfolio.dto.ProjectDetailResponse;
 import ch.tsering.portfolio.dto.ProjectSummaryResponse;
+import ch.tsering.portfolio.dto.UpdateProjectRequest;
 import ch.tsering.portfolio.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,10 @@ public class ProjectController {
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<ProjectDetailResponse> getProjectBySlug(
+    public ProjectDetailResponse getProjectBySlug(
             @PathVariable String slug
     ) {
-        return projectService.getProjectBySlug(slug)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-
+        return projectService.getProjectBySlug(slug);
     }
 
     @PostMapping
@@ -50,5 +48,32 @@ public class ProjectController {
         return ResponseEntity
                 .created(location)
                 .body(createdProject);
+    }
+
+    @PutMapping("/{slug}")
+    public ResponseEntity<ProjectDetailResponse> updateProject(
+            @PathVariable String slug,
+            @Valid @RequestBody UpdateProjectRequest request
+    ) {
+        ProjectDetailResponse updatedProject =
+                projectService.updateProject(slug, request);
+
+        URI location = URI.create(
+                "/api/projects/" + updatedProject.slug()
+        );
+
+        return ResponseEntity
+                .ok()
+                .location(location)
+                .body(updatedProject);
+    }
+
+    @DeleteMapping("/{slug}")
+    public ResponseEntity<Void> deleteProject(
+            @PathVariable String slug
+    ) {
+        projectService.deleteProject(slug);
+
+        return ResponseEntity.noContent().build();
     }
 }

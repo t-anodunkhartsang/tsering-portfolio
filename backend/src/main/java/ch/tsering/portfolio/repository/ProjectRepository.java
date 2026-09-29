@@ -10,4 +10,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Optional<Project> findBySlug(String slug);
 
     boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
 }
