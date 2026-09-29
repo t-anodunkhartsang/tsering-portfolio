@@ -1,8 +1,10 @@
 package ch.tsering.portfolio.service;
 
+import ch.tsering.portfolio.dto.CreateProjectRequest;
 import ch.tsering.portfolio.dto.ProjectDetailResponse;
 import ch.tsering.portfolio.dto.ProjectSummaryResponse;
 import ch.tsering.portfolio.entity.Project;
+import ch.tsering.portfolio.exception.DuplicateProjectSlugException;
 import ch.tsering.portfolio.repository.ProjectRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,30 @@ public class ProjectService {
     public Optional<ProjectDetailResponse> getProjectBySlug(String slug) {
         return projectRepository.findBySlug(slug)
                 .map(this::toDetailResponse);
+    }
+
+    @Transactional
+    public ProjectDetailResponse createProject(CreateProjectRequest request) {
+
+        if (projectRepository.existsBySlug(request.slug())) {
+            throw new DuplicateProjectSlugException(request.slug());
+        }
+
+        Project project = new Project();
+
+        project.setSlug(request.slug());
+        project.setTitle(request.title());
+        project.setShortDescription(request.shortDescription());
+        project.setDescription(request.description());
+        project.setGithubUrl(request.githubUrl());
+        project.setLiveUrl(request.liveUrl());
+        project.setImageUrl(request.imageUrl());
+        project.setFeatured(request.featured());
+        project.setDisplayOrder(request.displayOrder());
+
+        Project savedProject = projectRepository.save(project);
+
+        return toDetailResponse(savedProject);
     }
 
     private ProjectSummaryResponse toSummaryResponse(Project project) {

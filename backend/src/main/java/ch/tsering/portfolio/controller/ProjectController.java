@@ -1,14 +1,14 @@
 package ch.tsering.portfolio.controller;
 
+import ch.tsering.portfolio.dto.CreateProjectRequest;
 import ch.tsering.portfolio.dto.ProjectDetailResponse;
 import ch.tsering.portfolio.dto.ProjectSummaryResponse;
 import ch.tsering.portfolio.service.ProjectService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -34,5 +34,21 @@ public class ProjectController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
 
+    }
+
+    @PostMapping
+    public ResponseEntity<ProjectDetailResponse> createProject(
+            @Valid @RequestBody CreateProjectRequest request
+    ) {
+        ProjectDetailResponse createdProject =
+                projectService.createProject(request);
+
+        URI location = URI.create(
+                "/api/projects/" + createdProject.slug()
+        );
+
+        return ResponseEntity
+                .created(location)
+                .body(createdProject);
     }
 }
